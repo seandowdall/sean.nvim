@@ -5,9 +5,49 @@ return {
     "hrsh7th/cmp-nvim-lsp",
     { "antosha417/nvim-lsp-file-operations", config = true },
     { "folke/neodev.nvim", opts = {} },
+    -- Ensure mason-lspconfig is available before configuring handlers
+    "williamboman/mason-lspconfig.nvim",
   },
   config = function()
     local keymap = vim.keymap -- for conciseness
+
+    -- Ensure servers are set up via mason-lspconfig with proper capabilities
+    local lspconfig = require("lspconfig")
+    local mason_lspconfig = require("mason-lspconfig")
+    local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+    -- Configure server handlers (new API with fallback for older versions)
+    local handlers = {
+      -- Default handler for all servers
+      function(server_name)
+        lspconfig[server_name].setup({
+          capabilities = capabilities,
+        })
+      end,
+
+      -- Server-specific overrides
+      ["lua_ls"] = function()
+        lspconfig.lua_ls.setup({
+          capabilities = capabilities,
+          settings = {
+            Lua = {
+              diagnostics = { globals = { "vim" } },
+              workspace = {
+                library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
+              },
+              telemetry = { enable = false },
+            },
+          },
+        })
+      end,
+    }
+
+    if mason_lspconfig.setup_handlers then
+      mason_lspconfig.setup_handlers(handlers)
+    else
+      mason_lspconfig.setup({ handlers = handlers })
+    end
 
     vim.api.nvim_create_autocmd("LspAttach", {
       group = vim.api.nvim_create_augroup("UserLspConfig", {}),

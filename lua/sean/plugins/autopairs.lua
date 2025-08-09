@@ -25,7 +25,28 @@ return {
     local cmp = require("cmp")
 
     -- make autopairs and completion work together
-    cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+    -- Avoid adding parentheses on confirm in JSX/TSX where React components
+    -- should expand to tags instead of function calls.
+    local handlers = require("nvim-autopairs.completion.handlers")
+    cmp.event:on(
+      "confirm_done",
+      cmp_autopairs.on_confirm_done({
+        filetypes = {
+          ["*"] = {
+            ["("] = {
+              kind = {
+                cmp.lsp.CompletionItemKind.Function,
+                cmp.lsp.CompletionItemKind.Method,
+              },
+              handler = handlers["("],
+            },
+          },
+          -- Disable adding `()` for React TSX/JSX filetypes
+          typescriptreact = { ["("] = false },
+          javascriptreact = { ["("] = false },
+        },
+      })
+    )
   end,
 }
 
