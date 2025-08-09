@@ -8,7 +8,7 @@ return {
     -- configure lualine with auto theme
     lualine.setup({
       options = {
-        theme = "iceman",
+        theme = "auto",
       },
       sections = {
         lualine_x = {
