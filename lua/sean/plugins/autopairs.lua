@@ -42,11 +42,10 @@ return {
             },
           },
           -- Disable adding `()` for React TSX/JSX filetypes
-          typescriptreact = { ["("] = false },
-          javascriptreact = { ["("] = false },
+          typescriptreact = false,
+          javascriptreact = false,
         },
       })
     )
   end,
 }
-
